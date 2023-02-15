@@ -24,13 +24,13 @@ return new class extends Migration
         \Illuminate\Support\Facades\DB::table('schedules')->insert([
             [
                 'employee_id' => \App\Models\Employee::query()->inRandomOrder()->value('id'),
-                'date' => \Carbon\Carbon::now()->subDay(),
+                'date' => \Carbon\Carbon::now(),
                 'start_time' => '9:00',
                 'end_time' =>  '17:00'
             ],
             [
                 'employee_id' => \App\Models\Employee::query()->inRandomOrder()->value('id'),
-                'date' => \Carbon\Carbon::now()->subDay(2),
+                'date' => \Carbon\Carbon::now()->subDay(),
                 'start_time' => '9:00',
                 'end_time' =>  '17:00'
             ],

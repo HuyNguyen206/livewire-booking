@@ -12,15 +12,22 @@ use function GuzzleHttp\Promise\all;
 class TimeSlotGenerator
 {
     protected array $filters = [];
-    public array $slots = [];
+    public iterable $slots = [];
 
-    public function __construct(protected Schedule $schedule, protected Service $service, public int $interVal = 15)
+    public function __construct(protected Schedule $schedule, public Service $service, public int $interVal = 15)
     {
     }
 
     public function addFilter(FilterInterface $filter)
     {
         $this->filters[] = $filter;
+        return $this;
+    }
+
+    public function addFilters(array $filters)
+    {
+        $this->filters = $filters;
+        return $this;
     }
 
     public function generate()
@@ -29,7 +36,6 @@ class TimeSlotGenerator
         $bookableEndtime = $this->schedule->end_time->subMinute($this->service->duration);
         $endDate = $this->schedule->date->setTimeFrom($bookableEndtime);
         $this->slots = CarbonInterval::minute($this->interVal)->toPeriod($startDate, $endDate);
-
         if (count($this->filters)) {
             $this->applyFilters();
         }

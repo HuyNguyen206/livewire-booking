@@ -4,7 +4,6 @@ namespace App\Filter;
 
 use App\Booking\TimeSlotGenerator;
 use Carbon\Carbon;
-use Carbon\CarbonInterval;
 
 class SlotPassedTodayFilter implements FilterInterface
 {
@@ -13,8 +12,8 @@ class SlotPassedTodayFilter implements FilterInterface
         $result = collect($generator->slots)
             ->filter(function (Carbon $slot){
 //            for testing
-//           return $slot->gte(now()->subHour(2));
-            return $slot->gte(now());
+           return $slot->gte(now()->subHour(8));
+//            return $slot->gte(now());
         })->all();
 
         $generator->slots = $result;

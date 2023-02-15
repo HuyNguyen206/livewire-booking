@@ -20,8 +20,8 @@ class Schedule extends Model
         $this->belongsTo(Employee::class);
     }
 
-    public function scheduleUnavailability()
+    public function scheduleUnavailabilities()
     {
-        return $this->hasMany(ScheduleUnavailabilities::class);
+        return $this->hasMany(ScheduleUnavailability::class);
     }
 }

@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('schedule_unavailability', function (Blueprint $table) {
+        Schema::create('schedule_unavailabilities', function (Blueprint $table) {
             $table->id();
             $table->foreignId('schedule_id')->constrained()->cascadeOnDelete();
             $table->time('start_time');
@@ -21,11 +21,16 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        \Illuminate\Support\Facades\DB::table('schedule_unavailability')->insert([
+        \Illuminate\Support\Facades\DB::table('schedule_unavailabilities')->insert([
             [
                 'schedule_id' => \App\Models\Schedule::first()->id,
                 'start_time' => '12:00',
                 'end_time' =>  '13:00'
+            ],
+            [
+                'schedule_id' => \App\Models\Schedule::first()->id,
+                'start_time' => '14:00',
+                'end_time' =>  '14:30'
             ]
         ]);
     }

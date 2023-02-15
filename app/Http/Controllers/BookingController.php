@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Booking\TimeSlotGenerator;
 use App\Filter\SlotPassedTodayFilter;
+use App\Filter\UnavailabilityFilter;
 use App\Models\Schedule;
 use App\Models\Service;
 use Carbon\CarbonInterval;
@@ -22,9 +23,16 @@ class BookingController extends Controller
         $schedule = Schedule::first();
         $service = Service::first();
         $slotGenerator = (new TimeSlotGenerator($schedule, $service));
-        $slotGenerator->addFilter(new SlotPassedTodayFilter());
-        $slots = $slotGenerator->generate();
+        $slotGenerator
+            ->addFilter(new SlotPassedTodayFilter())
+            ->addFilter(new UnavailabilityFilter($schedule->scheduleUnavailabilities->first()))
+        ;
 
+        $slots = $slotGenerator->generate();
+        foreach ($slots as $slot){
+            dump($slot);
+        }
+        die();
         return view('bookings.create', compact('slots'));
     }
 }
