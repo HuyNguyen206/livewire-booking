@@ -12,7 +12,7 @@ class SlotPassedTodayFilter implements FilterInterface
         $result = collect($generator->slots)
             ->filter(function (Carbon $slot){
 //            for testing
-           return $slot->gte(now()->subHour(8));
+           return $slot->gte(now()->subHour(6));
 //            return $slot->gte(now());
         })->all();
 
