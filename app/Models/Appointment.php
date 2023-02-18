@@ -9,7 +9,7 @@ use Illuminate\Support\Str;
 class Appointment extends Model
 {
     use HasFactory;
-//    protected $guarded = false;
+//    protected static $unguarded = true;
 protected $fillable = ['client_name'];
     protected $casts = [
         'date' => 'datetime',

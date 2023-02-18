@@ -2,13 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Booking\TimeSlotGenerator;
-use App\Filter\SlotPassedTodayFilter;
-use App\Filter\UnavailabilityFilter;
+use App\Models\Employee;
 use App\Models\Schedule;
 use App\Models\Service;
-use App\Models\User;
-use Carbon\CarbonInterval;
 use Illuminate\Http\Request;
 
 class BookingController extends Controller
@@ -23,17 +19,22 @@ class BookingController extends Controller
     {
         $schedule = Schedule::first();
         $service = Service::first();
-        $slotGenerator = (new TimeSlotGenerator($schedule, $service));
-        $slotGenerator
-            ->addFilter(new SlotPassedTodayFilter())
-            ->addFilter(new UnavailabilityFilter($schedule->scheduleUnavailabilities))
-        ;
-
-        $slots = $slotGenerator->generate();
+        $employee = Employee::query()->first();
+//        $slotGenerator = (new TimeSlotGenerator($schedule, $service));
+//        $slotGenerator
+//            ->addFilter(new SlotPassedTodayFilter())
+//            ->addFilter(new UnavailabilityFilter($schedule->scheduleUnavailabilities))
+//            ->addFilter(new AppointmentFilter($schedule->employee->appointments()->whereDate('date', $schedule->date)->get()))
+//        ;
+//
+//        $slots = $slotGenerator->generate();
+//        $employee = Employee::first();
+        $slots = $employee->availableTimeSlots($schedule, $service);
         foreach ($slots as $slot){
             dump($slot);
         }
         die();
         return view('bookings.create', compact('slots'));
+
     }
 }

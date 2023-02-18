@@ -28,6 +28,6 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::get('bookings/create', \App\Http\Controllers\BookingController::class)->name('bookings.create');
+Route::get('bookings/create', \App\Http\Livewire\CreateBooking::class)->name('bookings.create');
 
 require __DIR__.'/auth.php';
