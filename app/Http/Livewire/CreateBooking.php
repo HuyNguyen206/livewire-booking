@@ -9,9 +9,10 @@ use Livewire\Component;
 
 class CreateBooking extends Component
 {
-    public $service = '';
-    public $employee = '';
-    public $schedule = '';
+    public $service;
+    public $employee;
+    public $schedule;
+    public $slot;
     public $availableTimeSlots = [];
 
     public $test;
@@ -37,7 +38,12 @@ class CreateBooking extends Component
 
     public function getListEmployeesProperty()
     {
-        return Employee::all();
+        return optional(Service::find($this->service))->employees ?? [];
+    }
+
+    public function getCanEnableDatePickerProperty()
+    {
+        return $this->service && $this->employee;
     }
 
     public function getSlots()
@@ -54,6 +60,15 @@ class CreateBooking extends Component
         } else {
             $this->availableTimeSlots = [];
         }
+    }
+
+    public function bookApp()
+    {
+//        Appointment::create([
+//            'employee_id' => $this->employee,
+//            'service_id' => $this->service,
+//            ''
+//        ]);
     }
 
     private function generateDatetimeData()
@@ -74,7 +89,6 @@ class CreateBooking extends Component
                 'fullDateTime' => $day->format('Y-m-d')
             ];
         }
-
         return $seriesOfOrderDay;
     }
 }

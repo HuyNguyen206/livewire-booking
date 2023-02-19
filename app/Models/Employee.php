@@ -31,10 +31,11 @@ class Employee extends Model
     public function availableTimeSlots(Schedule $schedule, Service $service)
     {
         $slotGenerator = (new TimeSlotGenerator($schedule, $service));
+        $appointments = $this->appointments()->whereDate('date', $schedule->date)->get();
         $slotGenerator
             ->addFilter(new SlotPassedTodayFilter())
-            ->addFilter(new UnavailabilityFilter($schedule->scheduleUnavailabilities))
-            ->addFilter(new AppointmentFilter($this->appointments()->whereDate('date', $schedule->date)->get()))
+            ->when($schedule->scheduleUnavailabilities->isNotEmpty(), new UnavailabilityFilter($schedule->scheduleUnavailabilities))
+            ->when($appointments->isNotEmpty(), new AppointmentFilter($appointments))
         ;
 
         return $slotGenerator->generate();

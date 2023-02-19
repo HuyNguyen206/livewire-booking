@@ -5,17 +5,27 @@ namespace App\Booking;
 use App\Filter\FilterInterface;
 use App\Models\Schedule;
 use App\Models\Service;
-use Carbon\Carbon;
 use Carbon\CarbonInterval;
-use function GuzzleHttp\Promise\all;
 
 class TimeSlotGenerator
 {
     protected array $filters = [];
     public iterable $slots = [];
 
+    public iterable $rawSlots = [];
+
     public function __construct(protected Schedule $schedule, public Service $service, public int $interVal = 15)
     {
+    }
+
+    public function when(bool $condition, FilterInterface $filter)
+    {
+        if (!$condition) {
+            return $this;
+        }
+        $this->addFilter($filter);
+
+        return $this;
     }
 
     public function addFilter(FilterInterface $filter)
@@ -36,16 +46,12 @@ class TimeSlotGenerator
         $bookableEndtime = $this->schedule->end_time->subMinute($this->service->duration);
         $endDate = $this->schedule->date->setTimeFrom($bookableEndtime);
         $this->slots = CarbonInterval::minute($this->interVal)->toPeriod($startDate, $endDate);
+        $this->rawSlots = $this->slots;
         if (count($this->filters)) {
             $this->applyFilters();
         }
 
         return $this->slots;
-//        return collect(CarbonInterval::minute($this->interVal)->toPeriod($startDate, $endDate))->filter(function (Carbon $slot) {
-////            for testing
-////           return $slot->gte(now()->subHour(2));
-//            return $slot->gte(now());
-//        })->all();
     }
 
     protected function applyFilters()
@@ -53,5 +59,11 @@ class TimeSlotGenerator
         collect($this->filters)->each(function (FilterInterface $filter) {
             $filter->apply($this);
         });
+        $this->slots = collect($this->slots)->sortBy(function ($slot){
+            return $slot['slot']->timestamp;
+        })->values()->map(function ($slot){
+            $slot['slot'] = $slot['slot']->format('Y-m-d H:i:s') ;
+            return $slot;
+        })->all();
     }
 }
