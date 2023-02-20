@@ -5,6 +5,7 @@ namespace App\Http\Livewire;
 use App\Models\Employee;
 use App\Models\Schedule;
 use App\Models\Service;
+use Carbon\CarbonInterval;
 use Livewire\Component;
 
 class CreateBooking extends Component
@@ -14,10 +15,14 @@ class CreateBooking extends Component
     public $schedule;
     public $slot;
     public $availableTimeSlots = [];
+    public $currentStartDate;
 
     public $test;
 
-    protected $listeners = ['getSlots'];
+    public function mount()
+    {
+        $this->currentStartDate = now();
+    }
 
     public function render()
     {
@@ -25,7 +30,6 @@ class CreateBooking extends Component
         $services = $this->listServices;
         $employees = $this->listEmployees;
         $seriesOfOrderDay = $this->generateDatetimeData();
-//        dd($seriesOfOrderDay);
 
         return view('livewire.create-booking', compact('services', 'employees', 'seriesOfOrderDay'))
             ->layout('layouts.guest');
@@ -46,10 +50,20 @@ class CreateBooking extends Component
         return $this->service && $this->employee;
     }
 
-    public function getSlots()
+    public function updatedEmployee()
     {
+        if($this->employee) {
+            $this->getSlots(now()->format('Y-m-d'));
+        }
+    }
+
+
+    public function getSlots($scheduleValue = null)
+    {
+        $this->schedule = $scheduleValue ?? $this->schedule;
         if ($this->service && $this->employee && $this->schedule) {
             $schedule = Schedule::whereDate('date', $this->schedule)->latest()->first();
+
             if ($schedule) {
                 $service = Service::find($this->service);
                 $this->availableTimeSlots = Employee::find($this->employee)->availableTimeSlots($schedule, $service);
@@ -71,24 +85,39 @@ class CreateBooking extends Component
 //        ]);
     }
 
+    public function getPreviousWeek()
+    {
+      $this->currentStartDate->subWeek()->subDay();
+    }
+
+    public function getCanSelectPreviousWeekProperty()
+    {
+       return $this->currentStartDate->copy()->endOfDay()->gt(today()->endOfDay());
+    }
+
+    public function getNextWeek()
+    {
+        $this->currentStartDate->addWeek()->addDay();
+    }
+
     private function generateDatetimeData()
     {
-        $now = now();
-        $currentMonthYear = $now->format('M Y');
+        $startDate = $this->currentStartDate;
+        $currentMonthYear = $startDate->format('M Y');
         $seriesOfOrderDay['label'] = $currentMonthYear;
-        $seriesOfOrderDay['text'] = [$now->format('D')];
-        $seriesOfOrderDay['digit'][] = [
-            'day' => $now->format('d'),
-            'fullDateTime' => $now->format('Y-m-d')
-        ];
-        for ($i = 1; $i <= 7; $i++) {
-            $day = $now->addDay();
-            $seriesOfOrderDay['text'][] = $day->format('D');
-            $seriesOfOrderDay['digit'][] = [
-                'day' => $day->format('d'),
-                'fullDateTime' => $day->format('Y-m-d')
+
+        $daysInterval = CarbonInterval::days()->toPeriod($startDate, $startDate->copy()->addWeek());
+        $seriesOfOrderDay['days'] = [];
+        collect($daysInterval)->map(function ($day) use(&$seriesOfOrderDay){
+            $seriesOfOrderDay['days'][] = [
+                'text' => $day->format('D'),
+                'digit' => [
+                    'day' => $day->format('d'),
+                    'fullDate' => $day->format('Y-m-d')
+                ]
             ];
-        }
+        });
+
         return $seriesOfOrderDay;
     }
 }

@@ -19,6 +19,9 @@ class BaseExcludeSlotFilter implements FilterInterface
         $lastEndTime = $lastOne->end_time;
 
         $availableSlots = collect($generator->slots)->filter(function ($slot) use ($lastEndTime, $firstStartTime, $generator) {
+            if  (is_array($slot)){
+                dd($slot);
+            }
             return $slot->gte($lastEndTime) || $slot->lte($firstStartTime->copy()->subMinute($generator->service->duration));
         })->all();
         $intervalsBetweenTwoUnvalidPoints = [];
@@ -35,18 +38,7 @@ class BaseExcludeSlotFilter implements FilterInterface
                 return $slot->betweenIncluded($intervalPair[0], $intervalPair[1]->copy()->subMinute($generator->service->duration));
             })->all()];
         });
-        $unavailableSlots = collect($generator->rawSlots)->diff($availableSlots)->map(function ($slot){
-            $dataSlot['slot'] =  $slot;
-            $dataSlot['isAvailable'] = false;
-            return $dataSlot;
-        });
 
-        $availableSlots = collect($availableSlots)->map(function ($slot){
-            $dataSlot['slot'] =  $slot;
-            $dataSlot['isAvailable'] = true;
-            return $dataSlot;
-        });
-
-        $generator->slots = [...$unavailableSlots, ...$availableSlots];
+        $generator->slots = $availableSlots;
     }
 }

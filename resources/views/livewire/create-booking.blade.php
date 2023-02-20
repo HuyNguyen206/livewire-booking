@@ -22,26 +22,52 @@
             <label class="font-semibold" for="">Select appointment time</label>
             <div class="datepicker p-2 rounded-2xl bg-white mt-2 @if(!$this->canEnableDatePicker) opacity-50 cursor-not-allowed @endif">
                 <div class="select-date flex justify-between">
-                    <span>&leftarrow;</span>
+                        <button type="button" wire:click.prevent="getPreviousWeek" class="
+                                @if(!$this->canSelectPreviousWeek) invisible @endif
+                                @if(!$this->canEnableDatePicker) cursor-not-allowed @endif"
+                                @if(!$this->canEnableDatePicker) disabled @endif>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+                            </svg>
+                        </button>
+
                     <span>{{$seriesOfOrderDay['label']}}</span>
-                    <span>&rightarrow;</span>
+                    <button wire:click.prevent="getNextWeek" class="@if(!$this->canEnableDatePicker) cursor-not-allowed @endif"
+                            @if(!$this->canEnableDatePicker) disabled @endif >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                        </svg>
+                    </button>
+
                 </div>
                 <div class="orderDay flex justify-between px-2 text-sm my-2">
-                    @foreach($seriesOfOrderDay['text'] as $text)
-                        <span>{{$text}}</span>
+                    @foreach($seriesOfOrderDay['days'] as $day)
+                        <div wire:key="{{$day['digit']['fullDate']}}" class="flex flex-col items-center justify-center space-y-2 group
+                                          @if(!$this->canEnableDatePicker) cursor-not-allowed
+                                            @else cursor-pointer
+                                          @endif">
+                            <span wire:key="span_{{$day['digit']['fullDate']}}">{{$day['text']}}</span>
+                            <label wire:key="label_{{$day['digit']['fullDate']}}" for="{{$day['digit']['fullDate']}}"
+                                   class="@if($this->canEnableDatePicker)cursor-pointer group-hover:bg-gray-500 group-hover:text-white @else cursor-not-allowed @endif
+                                   p-2 rounded-xl transition duration-200
+                                          @if($this->schedule === $day['digit']['fullDate']) bg-gray-500 text-white @endif">
+                                <span>{{$day['digit']['day']}}</span>
+                                <input wire:key="input_{{$day['digit']['fullDate']}}" class="hidden" wire:click="getSlots" id="{{$day['digit']['fullDate']}}" type="radio" wire:model="schedule" value="{{$day['digit']['fullDate']}}"></input>
+                            </label>
+                        </div>
                     @endforeach
                 </div>
-                <div class="orderDay flex justify-between mb-2">
-                    @foreach($seriesOfOrderDay['digit'] as $digit)
-                        <label wire:key="{{$digit['fullDateTime']}}" for="{{$digit['fullDateTime']}}"
-                               class="@if(!$this->canEnableDatePicker) cursor-not-allowed @else cursor-pointer @endif
-                               p-2 rounded-xl hover:bg-gray-500 hover:text-white transition duration-200
-                               @if($this->schedule === $digit['fullDateTime']) bg-gray-500 text-white @endif">
-                            <span>{{$digit['day']}}</span>
-                            <input class="hidden" wire:click="getSlots" id="{{$digit['fullDateTime']}}" type="radio" wire:model="schedule" value="{{$digit['fullDateTime']}}"></input>
-                        </label>
-                    @endforeach
-                </div>
+{{--                <div class="orderDay flex justify-between mb-2">--}}
+{{--                    @foreach($seriesOfOrderDay['digit'] as $digit)--}}
+{{--                        <label wire:key="{{$digit['fullDate']}}" for="{{$digit['fullDate']}}"--}}
+{{--                               class="@if(!$this->canEnableDatePicker) cursor-not-allowed @else cursor-pointer @endif--}}
+{{--                               p-2 rounded-xl hover:bg-gray-500 hover:text-white transition duration-200--}}
+{{--                               @if($this->schedule === $digit['fullDate']) bg-gray-500 text-white @endif">--}}
+{{--                            <span>{{$digit['day']}}</span>--}}
+{{--                            <input class="hidden" wire:click="getSlots" id="{{$digit['fullDate']}}" type="radio" wire:model="schedule" value="{{$digit['fullDate']}}"></input>--}}
+{{--                        </label>--}}
+{{--                    @endforeach--}}
+{{--                </div>--}}
                 <hr>
                 <div class="time max-h-60 overflow-y-auto my-2">
                     @forelse($availableTimeSlots as $s)

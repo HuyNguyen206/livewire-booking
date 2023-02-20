@@ -59,7 +59,20 @@ class TimeSlotGenerator
         collect($this->filters)->each(function (FilterInterface $filter) {
             $filter->apply($this);
         });
-        $this->slots = collect($this->slots)->sortBy(function ($slot){
+
+        $unavailableSlots = collect($this->rawSlots)->diff($this->slots)->map(function ($slot){
+            $dataSlot['slot'] =  $slot;
+            $dataSlot['isAvailable'] = false;
+            return $dataSlot;
+        });
+
+        $availableSlots = collect($this->slots)->map(function ($slot){
+            $dataSlot['slot'] =  $slot;
+            $dataSlot['isAvailable'] = true;
+            return $dataSlot;
+        });
+
+        $this->slots = collect([...$unavailableSlots, ...$availableSlots])->sortBy(function ($slot){
             return $slot['slot']->timestamp;
         })->values()->map(function ($slot){
             $slot['slot'] = $slot['slot']->format('Y-m-d H:i:s') ;
