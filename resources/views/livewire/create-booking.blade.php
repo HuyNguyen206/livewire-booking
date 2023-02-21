@@ -73,7 +73,7 @@
                     @forelse($availableTimeSlots as $s)
                         <label wire:key="key_slot_{{\Illuminate\Support\Str::slug($s['slot'])}}" for="slot_{{\Illuminate\Support\Str::of($s['slot'])}}"
                                class="block p-2 rounded-xl hover:bg-gray-500 hover:text-white transition duration-200
-                               @if(!$s['isAvailable']) opacity-50 cursor-not-allowed @else cursor-pointer @endif"
+                               @if(!$s['isAvailable']) opacity-50 cursor-not-allowed @else cursor-pointer @endif
                                @if($this->slot === $s['slot']) bg-gray-500 text-white @endif">
                             <span>{{$s['slot']}}</span>
                             <input @if(!$s['isAvailable']) disabled @endif class="hidden" id="slot_{{\Illuminate\Support\Str::of($s['slot'])}}" type="radio" wire:model="slot" value="{{$s['slot']}}"></input>

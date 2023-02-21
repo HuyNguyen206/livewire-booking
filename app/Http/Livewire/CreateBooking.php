@@ -5,6 +5,7 @@ namespace App\Http\Livewire;
 use App\Models\Employee;
 use App\Models\Schedule;
 use App\Models\Service;
+use Carbon\carbon;
 use Carbon\CarbonInterval;
 use Livewire\Component;
 
@@ -17,7 +18,6 @@ class CreateBooking extends Component
     public $availableTimeSlots = [];
     public $currentStartDate;
 
-    public $test;
 
     public function mount()
     {
@@ -26,6 +26,7 @@ class CreateBooking extends Component
 
     public function render()
     {
+        dump( $this->generateDatetimeData());
         $this->generateDatetimeData();
         $services = $this->listServices;
         $employees = $this->listEmployees;
@@ -52,9 +53,15 @@ class CreateBooking extends Component
 
     public function updatedEmployee()
     {
+        $this->reset('schedule', 'slot', 'availableTimeSlots');
         if($this->employee) {
             $this->getSlots(now()->format('Y-m-d'));
         }
+    }
+
+    public function updatedService()
+    {
+        $this->reset('schedule', 'slot', 'availableTimeSlots', 'employee');
     }
 
 
@@ -63,7 +70,6 @@ class CreateBooking extends Component
         $this->schedule = $scheduleValue ?? $this->schedule;
         if ($this->service && $this->employee && $this->schedule) {
             $schedule = Schedule::whereDate('date', $this->schedule)->latest()->first();
-
             if ($schedule) {
                 $service = Service::find($this->service);
                 $this->availableTimeSlots = Employee::find($this->employee)->availableTimeSlots($schedule, $service);
@@ -113,7 +119,7 @@ class CreateBooking extends Component
                 'text' => $day->format('D'),
                 'digit' => [
                     'day' => $day->format('d'),
-                    'fullDate' => $day->format('Y-m-d')
+                    'fullDate' => $day->format('h:i A')
                 ]
             ];
         });

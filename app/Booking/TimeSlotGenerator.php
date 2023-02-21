@@ -60,6 +60,10 @@ class TimeSlotGenerator
             $filter->apply($this);
         });
 
+        if (collect($this->slots)->isEmpty()) {
+            return [];
+        }
+
         $unavailableSlots = collect($this->rawSlots)->diff($this->slots)->map(function ($slot){
             $dataSlot['slot'] =  $slot;
             $dataSlot['isAvailable'] = false;
