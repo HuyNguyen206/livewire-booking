@@ -71,12 +71,13 @@
                 <hr>
                 <div class="time max-h-60 overflow-y-auto my-2">
                     @forelse($availableTimeSlots as $s)
-                        <label wire:key="key_slot_{{\Illuminate\Support\Str::slug($s['slot'])}}" for="slot_{{\Illuminate\Support\Str::of($s['slot'])}}"
+
+                        <label wire:key="key_slot_{{\Illuminate\Support\Str::slug($s['slot']['label'])}}" for="slot_{{\Illuminate\Support\Str::of($s['slot']['label'])}}"
                                class="block p-2 rounded-xl hover:bg-gray-500 hover:text-white transition duration-200
                                @if(!$s['isAvailable']) opacity-50 cursor-not-allowed @else cursor-pointer @endif
-                               @if($this->slot === $s['slot']) bg-gray-500 text-white @endif">
-                            <span>{{$s['slot']}}</span>
-                            <input @if(!$s['isAvailable']) disabled @endif class="hidden" id="slot_{{\Illuminate\Support\Str::of($s['slot'])}}" type="radio" wire:model="slot" value="{{$s['slot']}}"></input>
+                               @if($slot == $s['slot']['timestamp']) bg-gray-500 text-white @endif">
+                            <span>{{$s['slot']['label']}}</span>
+                            <input @if(!$s['isAvailable']) disabled @endif class="hidden" id="slot_{{\Illuminate\Support\Str::of($s['slot']['label'])}}" type="radio" wire:model="slot" value="{{$s['slot']['timestamp']}}"></input>
                         </label>
                         @empty
                         <div class="text-center mt-2">
@@ -84,10 +85,31 @@
                         </div>
                     @endforelse
                 </div>
-                <hr>
-                <div class="flex justify-center mt-2">
-                    <button wire:click.prevent="bookApp" class="bg-purple-600 text-white px-4 py-2 rounded-xl  @if(!$slot) opacity-50 cursor-not-allowed @endif" @if(!$slot) disabled @endif>Book</button>
+            </div>
+            @if($slot)
+                <div class="mt-2">
+                    <p class="font-semibold">You're ready to book</p>
+                    <hr>
+                    <p>
+                        <span class="font-semibold">{{$this->serviceModel->name}} {{($this->serviceModel->duration)}}
+                        with {{$this->employeeModel->name}}</span> on {{$this->formatSelectedDateSlot}}
+                    </p>
                 </div>
+            <div class="control-input mt-2">
+                <label for="" class="font-semibold">
+                    Your name
+                </label>
+                <input type="text" class="w-full border-none rounded">
+            </div>
+            <div class="control-input">
+                <label for="" class="font-semibold">
+                    Your email address
+                </label>
+                <input type="email" class="w-full border-none rounded">
+            </div>
+            @endif
+            <div class="flex justify-center mt-2">
+                <button wire:click.prevent="bookApp" class="bg-purple-600 text-white px-4 py-2 rounded-xl  @if(!$slot) opacity-50 cursor-not-allowed @endif" @if(!$slot) disabled @endif>Book</button>
             </div>
         </div>
 </div>

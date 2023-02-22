@@ -79,7 +79,10 @@ class TimeSlotGenerator
         $this->slots = collect([...$unavailableSlots, ...$availableSlots])->sortBy(function ($slot){
             return $slot['slot']->timestamp;
         })->values()->map(function ($slot){
-            $slot['slot'] = $slot['slot']->format('Y-m-d H:i:s') ;
+            $slot['slot'] = [
+                'label' => $slot['slot']->format('h:i A'),
+                'timestamp' => $slot['slot']->timestamp,
+            ];
             return $slot;
         })->all();
     }

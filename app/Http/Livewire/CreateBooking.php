@@ -26,8 +26,6 @@ class CreateBooking extends Component
 
     public function render()
     {
-        dump( $this->generateDatetimeData());
-        $this->generateDatetimeData();
         $services = $this->listServices;
         $employees = $this->listEmployees;
         $seriesOfOrderDay = $this->generateDatetimeData();
@@ -43,7 +41,17 @@ class CreateBooking extends Component
 
     public function getListEmployeesProperty()
     {
-        return optional(Service::find($this->service))->employees ?? [];
+        return optional($this->serviceModel)->employees ?? [];
+    }
+
+    public function getServiceModelProperty()
+    {
+        return Service::find($this->service);
+    }
+
+    public function getEmployeeModelProperty()
+    {
+        return Employee::find($this->employee);
     }
 
     public function getCanEnableDatePickerProperty()
@@ -59,6 +67,12 @@ class CreateBooking extends Component
         }
     }
 
+    public function getFormatSelectedDateSlotProperty()
+    {
+        $carbon = Carbon::createFromTimestamp($this->slot);
+        return $carbon->format('D dS M Y').' at '. $carbon->format('h:i A');
+    }
+
     public function updatedService()
     {
         $this->reset('schedule', 'slot', 'availableTimeSlots', 'employee');
@@ -72,7 +86,7 @@ class CreateBooking extends Component
             $schedule = Schedule::whereDate('date', $this->schedule)->latest()->first();
             if ($schedule) {
                 $service = Service::find($this->service);
-                $this->availableTimeSlots = Employee::find($this->employee)->availableTimeSlots($schedule, $service);
+                $this->availableTimeSlots = $this->employeeModel->availableTimeSlots($schedule, $service);
             } else {
                 $this->availableTimeSlots = [];
             }
@@ -119,7 +133,7 @@ class CreateBooking extends Component
                 'text' => $day->format('D'),
                 'digit' => [
                     'day' => $day->format('d'),
-                    'fullDate' => $day->format('h:i A')
+                    'fullDate' => $day->format('Y-m-d')
                 ]
             ];
         });
