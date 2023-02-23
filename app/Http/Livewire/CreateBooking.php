@@ -7,6 +7,7 @@ use App\Models\Schedule;
 use App\Models\Service;
 use Carbon\carbon;
 use Carbon\CarbonInterval;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
 
 class CreateBooking extends Component
@@ -17,6 +18,9 @@ class CreateBooking extends Component
     public $slot;
     public $availableTimeSlots = [];
     public $currentStartDate;
+
+    public $email;
+    public $name;
 
 
     public function mount()
@@ -32,6 +36,29 @@ class CreateBooking extends Component
 
         return view('livewire.create-booking', compact('services', 'employees', 'seriesOfOrderDay'))
             ->layout('layouts.guest');
+    }
+
+    protected function rules()
+    {
+        return [
+            'name' => ['required', 'min:3'],
+            'email' => ['required', 'email', 'min:6'],
+            'schedule' => ['required'],
+            'slot' => 'required',
+            'service' => ['required', Rule::exists('services', 'id')],
+            'employee'=> ['required', Rule::exists('employees', 'id')]
+        ];
+    }
+
+    public function bookApp()
+    {
+        $data = $this->validate();
+        dd($data);
+        Appointment::create([
+            'employee_id' => $this->employee,
+            'service_id' => $this->service,
+            ''
+        ]);
     }
 
     public function getListServicesProperty()
@@ -61,7 +88,7 @@ class CreateBooking extends Component
 
     public function updatedEmployee()
     {
-        $this->reset('schedule', 'slot', 'availableTimeSlots');
+        $this->reset('schedule', 'slot', 'availableTimeSlots', 'name', 'email');
         if($this->employee) {
             $this->getSlots(now()->format('Y-m-d'));
         }
@@ -75,7 +102,7 @@ class CreateBooking extends Component
 
     public function updatedService()
     {
-        $this->reset('schedule', 'slot', 'availableTimeSlots', 'employee');
+        $this->reset('schedule', 'slot', 'availableTimeSlots', 'employee', 'name', 'email');
     }
 
 
@@ -94,15 +121,6 @@ class CreateBooking extends Component
         } else {
             $this->availableTimeSlots = [];
         }
-    }
-
-    public function bookApp()
-    {
-//        Appointment::create([
-//            'employee_id' => $this->employee,
-//            'service_id' => $this->service,
-//            ''
-//        ]);
     }
 
     public function getPreviousWeek()
