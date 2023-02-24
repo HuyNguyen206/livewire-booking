@@ -115,7 +115,7 @@
                     <p class="font-semibold">You're ready to book</p>
                     <hr>
                     <p>
-                        <span class="font-semibold">{{$this->serviceModel->name}} {{($this->serviceModel->duration)}}
+                        <span class="font-semibold">{{$this->serviceModel->name}} {{($this->serviceModel->duration." minutes")}}
                         with {{$this->employeeModel->name}}</span> on {{$this->formatSelectedDateSlot}}
                     </p>
                 </div>

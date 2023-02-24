@@ -2,11 +2,13 @@
 
 namespace App\Http\Livewire;
 
+use App\Models\Appointment;
 use App\Models\Employee;
 use App\Models\Schedule;
 use App\Models\Service;
 use Carbon\carbon;
 use Carbon\CarbonInterval;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 
@@ -46,19 +48,26 @@ class CreateBooking extends Component
             'schedule' => ['required'],
             'slot' => 'required',
             'service' => ['required', Rule::exists('services', 'id')],
-            'employee'=> ['required', Rule::exists('employees', 'id')]
+            'employee' => ['required', Rule::exists('employees', 'id')]
         ];
     }
 
     public function bookApp()
     {
         $data = $this->validate();
-        dd($data);
-        Appointment::create([
-            'employee_id' => $this->employee,
-            'service_id' => $this->service,
-            ''
-        ]);
+        $startime = Carbon::createFromTimestamp($data['slot']);
+        $createData = [
+            'employee_id' => $data['employee'],
+            'service_id' => $data['service'],
+            'date' => $data['schedule'], //can use $startime->toDateString() to convert to date string
+            'start_time' => $startime, //can use $startime->toTimeString() to convert to time string
+            'end_time' => $startime->copy()->addMinute($this->serviceModel->duration),
+            'client_email' => $data['email'],
+            'client_name' => $data['name'],
+        ];
+        $appointment = Appointment::create($createData);
+
+        return $this->redirect(URL::signedRoute('bookings.confirmation', ['token' => $appointment->token, 'uuid' => $appointment->uuid]));
     }
 
     public function getListServicesProperty()
@@ -89,7 +98,7 @@ class CreateBooking extends Component
     public function updatedEmployee()
     {
         $this->reset('schedule', 'slot', 'availableTimeSlots', 'name', 'email');
-        if($this->employee) {
+        if ($this->employee) {
             $this->getSlots(now()->format('Y-m-d'));
         }
     }
@@ -97,7 +106,7 @@ class CreateBooking extends Component
     public function getFormatSelectedDateSlotProperty()
     {
         $carbon = Carbon::createFromTimestamp($this->slot);
-        return $carbon->format('D dS M Y').' at '. $carbon->format('h:i A');
+        return $carbon->format('D dS M Y') . ' at ' . $carbon->format('h:i A');
     }
 
     public function updatedService()
@@ -125,12 +134,12 @@ class CreateBooking extends Component
 
     public function getPreviousWeek()
     {
-      $this->currentStartDate->subWeek()->subDay();
+        $this->currentStartDate->subWeek()->subDay();
     }
 
     public function getCanSelectPreviousWeekProperty()
     {
-       return $this->currentStartDate->copy()->endOfDay()->gt(today()->endOfDay());
+        return $this->currentStartDate->copy()->endOfDay()->gt(today()->endOfDay());
     }
 
     public function getNextWeek()
@@ -146,7 +155,7 @@ class CreateBooking extends Component
 
         $daysInterval = CarbonInterval::days()->toPeriod($startDate, $startDate->copy()->addWeek());
         $seriesOfOrderDay['days'] = [];
-        collect($daysInterval)->map(function ($day) use(&$seriesOfOrderDay){
+        collect($daysInterval)->map(function ($day) use (&$seriesOfOrderDay) {
             $seriesOfOrderDay['days'][] = [
                 'text' => $day->format('D'),
                 'digit' => [

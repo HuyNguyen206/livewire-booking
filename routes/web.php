@@ -29,5 +29,6 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::get('bookings/create', \App\Http\Livewire\CreateBooking::class)->name('bookings.create');
-
+Route::get('booking/confirmation/{uuid}/{token}', \App\Http\Livewire\ConfirmationBooking::class)
+    ->middleware(\App\Http\Middleware\ValidateSignature::class)->name('bookings.confirmation');
 require __DIR__.'/auth.php';
