@@ -2,11 +2,10 @@
 
 namespace App\Http\Livewire;
 
+use App\Http\Livewire\Traits\WithCachedProperty;
 use App\Models\Appointment;
-use App\Models\Employee;
 use App\Models\Schedule;
-use App\Models\Service;
-use Carbon\carbon;
+use Carbon\Carbon;
 use Carbon\CarbonInterval;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Validation\Rule;
@@ -14,6 +13,8 @@ use Livewire\Component;
 
 class CreateBooking extends Component
 {
+    use WithCachedProperty;
+
     public $service;
     public $employee;
     public $schedule;
@@ -70,31 +71,6 @@ class CreateBooking extends Component
         return $this->redirect(URL::signedRoute('bookings.confirmation', ['token' => $appointment->token, 'uuid' => $appointment->uuid]));
     }
 
-    public function getListServicesProperty()
-    {
-        return Service::all();
-    }
-
-    public function getListEmployeesProperty()
-    {
-        return optional($this->serviceModel)->employees ?? [];
-    }
-
-    public function getServiceModelProperty()
-    {
-        return Service::find($this->service);
-    }
-
-    public function getEmployeeModelProperty()
-    {
-        return Employee::find($this->employee);
-    }
-
-    public function getCanEnableDatePickerProperty()
-    {
-        return $this->service && $this->employee;
-    }
-
     public function updatedEmployee()
     {
         $this->reset('schedule', 'slot', 'availableTimeSlots', 'name', 'email');
@@ -103,17 +79,10 @@ class CreateBooking extends Component
         }
     }
 
-    public function getFormatSelectedDateSlotProperty()
-    {
-        $carbon = Carbon::createFromTimestamp($this->slot);
-        return $carbon->format('D dS M Y') . ' at ' . $carbon->format('h:i A');
-    }
-
     public function updatedService()
     {
         $this->reset('schedule', 'slot', 'availableTimeSlots', 'employee', 'name', 'email');
     }
-
 
     public function getSlots($scheduleValue = null)
     {
@@ -121,7 +90,7 @@ class CreateBooking extends Component
         if ($this->service && $this->employee && $this->schedule) {
             $schedule = Schedule::whereDate('date', $this->schedule)->latest()->first();
             if ($schedule) {
-                $service = Service::find($this->service);
+                $service = $this->serviceModel;
                 $this->availableTimeSlots = $this->employeeModel->availableTimeSlots($schedule, $service);
             } else {
                 $this->availableTimeSlots = [];
@@ -135,11 +104,6 @@ class CreateBooking extends Component
     public function getPreviousWeek()
     {
         $this->currentStartDate->subWeek()->subDay();
-    }
-
-    public function getCanSelectPreviousWeekProperty()
-    {
-        return $this->currentStartDate->copy()->endOfDay()->gt(today()->endOfDay());
     }
 
     public function getNextWeek()
